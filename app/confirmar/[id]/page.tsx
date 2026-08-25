@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { ConfirmacaoForm } from './ConfirmacaoForm'
 
 export default async function ConfirmarPage({
   params,
@@ -14,15 +15,17 @@ export default async function ConfirmarPage({
     .single()
 
   if (error || !convidado) {
-    return <p>Convidado não encontrado.</p>
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#06070a] px-6 text-center">
+        <p
+          className="text-sm tracking-wide text-[#8B8F9C]"
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          CONVITE NÃO ENCONTRADO NOS ARQUIVOS DE GOTHAM.
+        </p>
+      </main>
+    )
   }
 
-  return (
-    <div>
-      <h1>Olá, {convidado.nome}!</h1>
-      <p>ID: {convidado.id}</p>
-      <p>Confirmado: {convidado.confirmado ? 'Sim' : 'Não'}</p>
-      <p>Limite de acompanhantes: {convidado.limite_acompanhantes}</p>
-    </div>
-  )
+  return <ConfirmacaoForm convidado={convidado} />
 }
