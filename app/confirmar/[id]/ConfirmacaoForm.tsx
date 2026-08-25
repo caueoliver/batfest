@@ -212,19 +212,3 @@ function Spotlight() {
     />
   )
 }
-
-function BatEmblem({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 100 50"
-      className={className}
-      aria-hidden
-      fill="currentColor"
-    >
-      <polygon points="50,26 6,4 22,26 6,48" />
-      <polygon points="50,26 94,4 78,26 94,48" />
-      <polygon points="41,26 46,8 50,26" />
-      <polygon points="50,26 54,8 59,26" />
-    </svg>
-  )
-}
