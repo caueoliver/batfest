@@ -1,0 +1,22 @@
+-- Extensão necessária para gen_random_uuid() no Supabase/Postgres
+create extension if not exists pgcrypto;
+
+create table convidados (
+  id uuid primary key default gen_random_uuid(),
+  nome varchar not null,
+  telefone varchar,
+  confirmado boolean not null default false,
+  limite_acompanhantes int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table convite (
+  id uuid primary key default gen_random_uuid(),
+  convidado_id uuid not null references convidados(id) on delete cascade,
+  nome_convidado varchar,
+  data_checkin timestamptz,
+  created_at timestamptz not null default now()
+);
+
+-- Index para buscar rapidamente todos os convites de um convidado
+create index idx_convite_convidado_id on convite(convidado_id);
