@@ -300,7 +300,7 @@ function FiltroSelect({
   return (
     <div>
       <label
-        className="block text-[10px] tracking-[0.2em] text-[#8B8F9C]"
+        className="block text-[10px] text-[#8B8F9C]"
         style={{ fontFamily: 'var(--font-mono)' }}
       >
         {label.toUpperCase()}
