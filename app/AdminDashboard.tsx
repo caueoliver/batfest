@@ -276,7 +276,7 @@ function Card({
   return (
     <div className="border border-white/10 p-4">
       <p
-        className="text-[11px] tracking-[0.2em] text-[#8B8F9C]"
+        className="text-[11px] text-[#8B8F9C]"
         style={{ fontFamily: 'var(--font-mono)' }}
       >
         {titulo.toUpperCase()}
@@ -300,7 +300,7 @@ function FiltroSelect({
   return (
     <div>
       <label
-        className="block text-[10px] text-[#8B8F9C]"
+        className="block text-[10px] tracking-[0.2em] text-[#8B8F9C]"
         style={{ fontFamily: 'var(--font-mono)' }}
       >
         {label.toUpperCase()}
