@@ -1,5 +1,7 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import QRCode from 'qrcode'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 
 type Convidado = {
   id: string
@@ -14,10 +16,16 @@ type Convite = {
 export async function gerarConvitePdf(
   convidado: Convidado,
   convites: Convite[]
-): Promise<Buffer> {
+): Promise<Uint8Array> {
   const pdfDoc = await PDFDocument.create()
   const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
   const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica)
+
+  // lê e embute o símbolo uma única vez (reaproveitado em todas as páginas)
+  const logoPath = path.join(process.cwd(), 'public', 'simbolo.png')
+  const logoBytes = await readFile(logoPath)
+  const logoImage = await pdfDoc.embedPng(logoBytes)
+  const logoProporcao = logoImage.height / logoImage.width
 
   for (const convite of convites) {
     const nomeExibido = convite.nome_convidado ?? convidado.nome
@@ -41,9 +49,19 @@ export async function gerarConvitePdf(
       color: rgb(0.02, 0.03, 0.04),
     })
 
+    // símbolo centralizado no topo
+    const logoLargura = 128
+    const logoAltura = logoLargura * logoProporcao
+    page.drawImage(logoImage, {
+      x: (width - logoLargura) / 2,
+      y: height - 40 - logoAltura,
+      width: logoLargura,
+      height: logoAltura,
+    })
+
     page.drawText('CONVITE', {
       x: 40,
-      y: height - 50,
+      y: height - 40 - logoAltura - 24,
       size: 11,
       font: fontBold,
       color: rgb(0.79, 0.64, 0.15),
@@ -51,16 +69,16 @@ export async function gerarConvitePdf(
 
     page.drawText(nomeExibido, {
       x: 40,
-      y: height - 78,
+      y: height - 40 - logoAltura - 52,
       size: 16,
       font: fontBold,
       color: rgb(0.93, 0.93, 0.95),
     })
 
-    const qrSize = 220
+    const qrSize = 180
     page.drawImage(qrImage, {
       x: (width - qrSize) / 2,
-      y: height - 330,
+      y: 70,
       width: qrSize,
       height: qrSize,
     })
@@ -75,5 +93,5 @@ export async function gerarConvitePdf(
   }
 
   const pdfBytes = await pdfDoc.save()
-  return Buffer.from(pdfBytes)
+  return pdfBytes
 }

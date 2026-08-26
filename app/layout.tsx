@@ -8,6 +8,12 @@ const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
   title: 'Confirmação de presença',
+  description: 'Confirme sua presença nos 50 anos do Batman 🦇',
+  openGraph: {
+    title: 'Você foi convidado(a)',
+    description: 'Confirme sua presença e receba seu convite com QR code',
+    images: ['/simbolo.png'],
+  },
 }
 
 export default function RootLayout({

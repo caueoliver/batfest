@@ -5,7 +5,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY!)
 export async function enviarConvitePorEmail(
   destinatario: string,
   nomeConvidado: string,
-  pdfBuffer: Buffer,
+  pdfBuffer: Uint8Array,
   tentativas = 3
 ) {
   for (let tentativa = 1; tentativa <= tentativas; tentativa++) {
