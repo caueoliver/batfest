@@ -7,6 +7,9 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-body' })
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  ),
   title: 'Confirmação de presença',
   description: 'Confirme sua presença nos 50 anos do Batman 🦇',
   openGraph: {
