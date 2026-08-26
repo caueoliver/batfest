@@ -20,7 +20,7 @@ function adicionarLinkClicavel(
     Type: 'Annot',
     Subtype: 'Link',
     Rect: rect,
-    Border: [0, 0, 0], // Mantém a borda da anotação invisível
+    Border: [0, 0, 0], 
     A: {
       Type: 'Action',
       S: 'URI',
@@ -56,7 +56,7 @@ export async function GET(
   }
 
   const link = `${request.nextUrl.origin}/confirmar/${id}`
-  const textoBotao = "CONFIRME SUA PRESENÇA AQUI" // O texto que vai aparecer no PDF, em caixa alta
+  const textoBotao = "CONFIRME SUA PRESENÇA AQUI" 
 
   const caminhoImagem = path.join(process.cwd(), 'public', 'convite-base.jpeg')
   const imagemBytes = await fs.readFile(caminhoImagem)
@@ -64,7 +64,7 @@ export async function GET(
   const pdfDoc = await PDFDocument.create()
   const imagem = await pdfDoc.embedJpg(imagemBytes)
   
-  // Alterado para CourierBold para combinar com a fonte monospace do convite
+  
   const font = await pdfDoc.embedFont(StandardFonts.CourierBold) 
 
   const { width, height } = imagem.size()
@@ -72,52 +72,55 @@ export async function GET(
 
   page.drawImage(imagem, { x: 0, y: 0, width, height })
 
-  let tamanhoFonte = 22 // Um pouco menor para ficar mais elegante
-  const larguraMaxima = width * LINK_MAX_WIDTH_FRACTION
-  
-  // Calcula o tamanho baseado na frase, não na URL
-  while (
-    font.widthOfTextAtSize(textoBotao, tamanhoFonte) > larguraMaxima &&
-    tamanhoFonte > 6
-  ) {
-    tamanhoFonte -= 1
-  }
+  let tamanhoFonte = 40 
+const larguraMaxima = width * LINK_MAX_WIDTH_FRACTION
 
-  const larguraTexto = font.widthOfTextAtSize(textoBotao, tamanhoFonte)
-  
-  // Posição centralizada no eixo X e Y (no meio)
-  const x = (width - larguraTexto) / 2
-  const y = height * LINK_Y_FRACTION
+while (
+  font.widthOfTextAtSize(textoBotao, tamanhoFonte) > larguraMaxima &&
+  tamanhoFonte > 6
+) {
+  tamanhoFonte -= 1
+}
 
-  // Espaçamento (padding) ajustado para não ficar exagerado
-  const paddingX = 25
-  const paddingY = 20
+const larguraTexto = font.widthOfTextAtSize(textoBotao, tamanhoFonte)
 
-  // Cor cinza mais suave (0.7, 0.7, 0.7) para combinar com a estética
-  const corCinzaSuave = rgb(0.7, 0.7, 0.7)
+const x = (width - larguraTexto) / 2
+const y = height * LINK_Y_FRACTION
 
-  
+const paddingX = 50
+const paddingY = 45
 
-  // Desenha o texto do botão por cima, na cor cinza suave
-  page.drawText(textoBotao, {
-    x: x,
-    y: y,
-    size: tamanhoFonte,
-    font: font,
-    color: corCinzaSuave, // Texto cinza suave
-  })
+const corCinzaSuave = rgb(0.7, 0.7, 0.7)
 
-  // Adiciona o link clicável abrangendo o texto + o padding
-  adicionarLinkClicavel(
-    page,
-    [
-      x - paddingX, 
-      y - paddingY, 
-      x + larguraTexto + paddingX, 
-      y + tamanhoFonte + paddingY
-    ],
-    link
-  )
+
+page.drawText(textoBotao, {
+  x: x,
+  y: y,
+  size: tamanhoFonte,
+  font: font,
+  color: corCinzaSuave,
+})
+
+const espessuraLinha = tamanhoFonte * 0.05 
+const distanciaAbaixoTexto = tamanhoFonte * 0.15
+
+page.drawLine({
+  start: { x: x, y: y - distanciaAbaixoTexto },
+  end: { x: x + larguraTexto, y: y - distanciaAbaixoTexto },
+  thickness: espessuraLinha,
+  color: corCinzaSuave,
+})
+
+adicionarLinkClicavel(
+  page,
+  [
+    x - paddingX,
+    y - paddingY - distanciaAbaixoTexto,
+    x + larguraTexto + paddingX,
+    y + tamanhoFonte + paddingY,
+  ],
+  link
+)
 
   const pdfBytes = await pdfDoc.save()
   const nomeArquivo = convidado.nome.replace(/\s+/g, '-').toLowerCase()

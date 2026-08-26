@@ -19,7 +19,7 @@ export function Scanner() {
   async function iniciar() {
     setAtivo(true)
     const scanner = new Html5Qrcode('leitor-qr')
-    scannerRef.current = scanner
+    scannerRef.current = scannerw
 
     try {
       await scanner.start(

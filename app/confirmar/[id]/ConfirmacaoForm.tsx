@@ -176,7 +176,7 @@ export function ConfirmacaoForm({ convidado }: { convidado: Convidado }) {
                       key={i}
                       value={nome}
                       onChange={(e) => atualizarNome(i, e.target.value)}
-                      placeholder={`Nome do aliado ${i + 1}`}
+                      placeholder={`Nome do acompanhante ${i + 1}`}
                       className="w-full border-b border-white/15 bg-transparent px-1 py-2 text-sm text-[#EDEEF2] placeholder:text-[#8B8F9C]/50 focus-visible:border-[#C9A227] focus-visible:outline-none"
                     />
                   ))}
