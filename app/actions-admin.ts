@@ -75,7 +75,20 @@ export async function buscarDadosAdmin() {
   return {
     convidados: convidadosComContagem,
     totalConvidados: convidados.length,
+    totalJaConvidados: convidados.filter((c) => c.convidado).length, 
     totalConfirmados: convidados.filter((c) => c.confirmado).length,
     totalAcompanhantes: convites.filter((c) => c.nome_convidado).length,
+    }
+}
+
+export async function gerarConvite(convidadoId: string) {
+  const { error } = await supabase
+    .from('convidados')
+    .update({ convidado: true })
+    .eq('id', convidadoId)
+
+  if (error) {
+    console.error('Erro do Supabase ao gerar convite:', error)
+    throw new Error('Não foi possível marcar o convidado.')
   }
 }
