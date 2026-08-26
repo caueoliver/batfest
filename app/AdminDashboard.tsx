@@ -22,6 +22,7 @@ type Props = {
   totalJaConvidados: number
   totalConfirmados: number
   totalAcompanhantes: number
+  totalCheckins: number
 }
 
 export function AdminDashboard({
@@ -30,6 +31,7 @@ export function AdminDashboard({
   totalConfirmados,
   totalJaConvidados,
   totalAcompanhantes,
+  totalCheckins,  
 }: Props) {
   const [modalAberto, setModalAberto] = useState(false)
   const [busca, setBusca] = useState('')
@@ -110,11 +112,12 @@ export function AdminDashboard({
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-4">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <Card titulo="Convidados" valor={totalConvidados} />
           <Card titulo="Aguardando convite" valor={totalConvidados - totalJaConvidados} />
           <Card titulo="Confirmados" valor={totalConfirmados} />
           <Card titulo="Acompanhantes extras" valor={totalAcompanhantes} />
+          <Card titulo="Check-ins realizados" valor={totalCheckins} />
         </div>
 
         <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
