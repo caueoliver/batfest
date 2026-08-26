@@ -110,3 +110,40 @@ export async function criarConvidado(nome: string, limiteAcompanhantes: number) 
   }
 }
 
+export async function validarConvite(conviteId: string) {
+  const { data: convite, error } = await supabase
+    .from('convite')
+    .select('*, convidados(nome)')
+    .eq('id', conviteId)
+    .single()
+
+  if (error || !convite) {
+    return { status: 'invalido' as const }
+  }
+
+  const nomeExibido = convite.nome_convidado ?? convite.convidados?.nome ?? 'Convidado'
+
+  if (convite.data_checkin) {
+    return {
+      status: 'ja_usado' as const,
+      nome: nomeExibido,
+    }
+  }
+
+  const { error: erroUpdate } = await supabase
+    .from('convite')
+    .update({ data_checkin: new Date().toISOString() })
+    .eq('id', conviteId)
+
+  if (erroUpdate) {
+    console.error('Erro ao marcar checkin:', erroUpdate)
+    return { status: 'invalido' as const }
+  }
+
+  return {
+    status: 'valido' as const,
+    nome: nomeExibido,
+  }
+}
+   
+
