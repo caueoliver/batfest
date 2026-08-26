@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useTransition } from 'react'
+import { useState, useMemo, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { sairAdmin, gerarConvite } from './actions-admin'
 import { NovoConvidadoModal } from './NovoConvidadoModal'
@@ -14,6 +14,7 @@ type ConvidadoComContagem = {
   convidado: boolean
   limite_acompanhantes: number
   acompanhantesConfirmados: number
+  checkinsRealizados: number
 }
 
 type Props = {
@@ -39,26 +40,46 @@ export function AdminDashboard({
   const [filtroConfirmado, setFiltroConfirmado] = useState<'todos' | 'sim' | 'nao'>('todos')
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const ITENS_POR_PAGINA = 10
+
+const [filtroCheckin, setFiltroCheckin] = useState<'todos' | 'sim' | 'nao'>('todos')
+const [paginaAtual, setPaginaAtual] = useState(1)
 
   const convidadosFiltrados = useMemo(() => {
-    const termo = busca.trim().toLowerCase()
+  const termo = busca.trim().toLowerCase()
 
-    return convidados.filter((c) => {
-      const bateNome = !termo || c.nome.toLowerCase().includes(termo)
+  return convidados.filter((c) => {
+    const bateNome = !termo || c.nome.toLowerCase().includes(termo)
 
-      const bateConvidado =
-        filtroConvidado === 'todos' ||
-        (filtroConvidado === 'sim' && c.convidado) ||
-        (filtroConvidado === 'nao' && !c.convidado)
+    const bateConvidado =
+      filtroConvidado === 'todos' ||
+      (filtroConvidado === 'sim' && c.convidado) ||
+      (filtroConvidado === 'nao' && !c.convidado)
 
-      const bateConfirmado =
-        filtroConfirmado === 'todos' ||
-        (filtroConfirmado === 'sim' && c.confirmado) ||
-        (filtroConfirmado === 'nao' && !c.confirmado)
+    const bateConfirmado =
+      filtroConfirmado === 'todos' ||
+      (filtroConfirmado === 'sim' && c.confirmado) ||
+      (filtroConfirmado === 'nao' && !c.confirmado)
 
-      return bateNome && bateConvidado && bateConfirmado
-    })
-  }, [busca, filtroConvidado, filtroConfirmado, convidados])
+    const bateCheckin =
+      filtroCheckin === 'todos' ||
+      (filtroCheckin === 'sim' && c.checkinsRealizados > 0) ||
+      (filtroCheckin === 'nao' && c.checkinsRealizados === 0)
+
+    return bateNome && bateConvidado && bateConfirmado && bateCheckin
+  })
+}, [busca, filtroConvidado, filtroConfirmado, filtroCheckin, convidados])
+
+  const totalPaginas = Math.max(1, Math.ceil(convidadosFiltrados.length / ITENS_POR_PAGINA))
+
+const convidadosPaginados = useMemo(() => {
+  const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA
+  return convidadosFiltrados.slice(inicio, inicio + ITENS_POR_PAGINA)
+}, [convidadosFiltrados, paginaAtual])
+
+useEffect(() => {
+  setPaginaAtual(1)
+}, [busca, filtroConvidado, filtroConfirmado, filtroCheckin])
 
   function sair() {
     startTransition(async () => {
@@ -115,9 +136,9 @@ export function AdminDashboard({
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <Card titulo="Convidados" valor={totalConvidados} />
           <Card titulo="Aguardando convite" valor={totalConvidados - totalJaConvidados} />
-          <Card titulo="Confirmados" valor={totalConfirmados} />
-          <Card titulo="Acompanhantes extras" valor={totalAcompanhantes} />
-          <Card titulo="Check-ins realizados" valor={totalCheckins} />
+          <Card titulo="Confirmados" valor={totalConfirmados} cor="amarelo" />
+          <Card titulo="Acompanhantes extras" valor={totalAcompanhantes} cor="amarelo" />
+          <Card titulo="Check-ins realizados" valor={totalCheckins} cor="verde" />
         </div>
 
         <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -140,6 +161,12 @@ export function AdminDashboard({
               valor={filtroConfirmado}
               aoMudar={setFiltroConfirmado}
             />
+
+            <FiltroSelect
+    label="Check-in"
+    valor={filtroCheckin}
+    aoMudar={setFiltroCheckin}
+  />
           </div>
         </div>
 
@@ -147,7 +174,7 @@ export function AdminDashboard({
           {convidadosFiltrados.length === 0 && (
             <p className="py-6 text-sm text-[#8B8F9C]">Nenhum convidado encontrado.</p>
           )}
-          {convidadosFiltrados.map((c) => (
+          {convidadosPaginados.map((c) => (
             <div key={c.id} className="flex items-center justify-between py-4">
               <div>
                 <p className="text-sm text-[#EDEEF2]">{c.nome}</p>
@@ -198,6 +225,33 @@ export function AdminDashboard({
             </div>
           ))}
         </div>
+        {convidadosFiltrados.length > 0 && (
+  <div className="mt-6 flex items-center justify-between">
+    <button
+      type="button"
+      onClick={() => setPaginaAtual((p) => Math.max(1, p - 1))}
+      disabled={paginaAtual === 1}
+      className="text-xs uppercase tracking-[0.2em] text-[#8B8F9C] underline underline-offset-4 hover:text-[#C9A227] disabled:opacity-30 disabled:no-underline"
+      style={{ fontFamily: 'var(--font-mono)' }}
+    >
+      ← Anterior
+    </button>
+
+    <p className="text-xs text-[#8B8F9C]" style={{ fontFamily: 'var(--font-mono)' }}>
+      Página {paginaAtual} de {totalPaginas}
+    </p>
+
+    <button
+      type="button"
+      onClick={() => setPaginaAtual((p) => Math.min(totalPaginas, p + 1))}
+      disabled={paginaAtual === totalPaginas}
+      className="text-xs uppercase tracking-[0.2em] text-[#8B8F9C] underline underline-offset-4 hover:text-[#C9A227] disabled:opacity-30 disabled:no-underline"
+      style={{ fontFamily: 'var(--font-mono)' }}
+    >
+      Próxima →
+    </button>
+  </div>
+)}
       </div>
       {modalAberto && (
         <NovoConvidadoModal onFechar={() => setModalAberto(false)} />
@@ -207,17 +261,28 @@ export function AdminDashboard({
   )
 }
 
-function Card({ titulo, valor }: { titulo: string; valor: number }) {
+function Card({
+  titulo,
+  valor,
+  cor,
+}: {
+  titulo: string
+  valor: number
+  cor?: 'amarelo' | 'verde'
+}) {
+  const corClasse =
+    cor === 'amarelo' ? 'text-yellow-400' : cor === 'verde' ? 'text-green-400' : 'text-[#EDEEF2]'
+
   return (
     <div className="border border-white/10 p-4">
       <p
-        className="text-[11px] tracking-[0.2em] text-[#8B8F9C]"
+        className="text-[11px] text-[#8B8F9C]"
         style={{ fontFamily: 'var(--font-mono)' }}
       >
         {titulo.toUpperCase()}
       </p>
       <p
-        className="mt-2 text-2xl text-[#EDEEF2]"
+        className={`mt-3 text-2xl ${corClasse}`}
         style={{ fontFamily: 'var(--font-display)' }}
       >
         {valor}
