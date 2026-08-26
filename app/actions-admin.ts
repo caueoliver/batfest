@@ -49,6 +49,8 @@ export async function buscarDadosAdmin() {
     throw new Error('Não foi possível carregar os convidados.')
   }
 
+
+
   const { data: convites, error: erroConvites } = await supabase
     .from('convite')
     .select('*')
@@ -58,6 +60,8 @@ export async function buscarDadosAdmin() {
   }
 
   const acompanhantesPorConvidado = new Map<string, number>()
+  const convitesPorConvidado = new Map<string, typeof convites>()
+
   for (const convite of convites) {
     if (convite.nome_convidado) {
       acompanhantesPorConvidado.set(
@@ -65,21 +69,28 @@ export async function buscarDadosAdmin() {
         (acompanhantesPorConvidado.get(convite.convidado_id) ?? 0) + 1
       )
     }
+    const lista = convitesPorConvidado.get(convite.convidado_id) ?? []
+    lista.push(convite)
+    convitesPorConvidado.set(convite.convidado_id, lista)
   }
 
-  const convidadosComContagem = convidados.map((c) => ({
-    ...c,
-    acompanhantesConfirmados: acompanhantesPorConvidado.get(c.id) ?? 0,
-  }))
+  const convidadosComContagem = convidados.map((c) => {
+    const conviteLista = convitesPorConvidado.get(c.id) ?? []
+    return {
+      ...c,
+      acompanhantesConfirmados: acompanhantesPorConvidado.get(c.id) ?? 0,
+      checkinsRealizados: conviteLista.filter((x) => x.data_checkin).length,
+    }
+  })
 
   return {
     convidados: convidadosComContagem,
     totalConvidados: convidados.length,
-    totalJaConvidados: convidados.filter((c) => c.convidado).length, 
+    totalJaConvidados: convidados.filter((c) => c.convidado).length,
     totalConfirmados: convidados.filter((c) => c.confirmado).length,
     totalAcompanhantes: convites.filter((c) => c.nome_convidado).length,
     totalCheckins: convites.filter((c) => c.data_checkin).length,
-    }
+  }
 }
 
 export async function gerarConvite(convidadoId: string) {
@@ -146,5 +157,5 @@ export async function validarConvite(conviteId: string) {
     nome: nomeExibido,
   }
 }
-   
+
 
