@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase'
 
 export const runtime = 'nodejs'
 
-// Ajustado para ficar centralizado verticalmente (50% da altura)
 const LINK_Y_FRACTION = 0.150 
 const LINK_MAX_WIDTH_FRACTION = 0.8
 
