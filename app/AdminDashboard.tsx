@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { sairAdmin, gerarConvite } from './actions-admin'
 import { NovoConvidadoModal } from './NovoConvidadoModal'
 
-
 type ConvidadoComContagem = {
   id: string
   nome: string
@@ -26,60 +25,61 @@ type Props = {
   totalCheckins: number
 }
 
+const ITENS_POR_PAGINA = 10
+
 export function AdminDashboard({
   convidados,
   totalConvidados,
   totalConfirmados,
   totalJaConvidados,
   totalAcompanhantes,
-  totalCheckins,  
+  totalCheckins,
 }: Props) {
   const [modalAberto, setModalAberto] = useState(false)
   const [busca, setBusca] = useState('')
   const [filtroConvidado, setFiltroConvidado] = useState<'todos' | 'sim' | 'nao'>('todos')
   const [filtroConfirmado, setFiltroConfirmado] = useState<'todos' | 'sim' | 'nao'>('todos')
+  const [filtroCheckin, setFiltroCheckin] = useState<'todos' | 'sim' | 'nao'>('todos')
+  const [paginaAtual, setPaginaAtual] = useState(1)
   const [isPending, startTransition] = useTransition()
+  const [linkCopiadoId, setLinkCopiadoId] = useState<string | null>(null)
   const router = useRouter()
-  const ITENS_POR_PAGINA = 10
-
-const [filtroCheckin, setFiltroCheckin] = useState<'todos' | 'sim' | 'nao'>('todos')
-const [paginaAtual, setPaginaAtual] = useState(1)
 
   const convidadosFiltrados = useMemo(() => {
-  const termo = busca.trim().toLowerCase()
+    const termo = busca.trim().toLowerCase()
 
-  return convidados.filter((c) => {
-    const bateNome = !termo || c.nome.toLowerCase().includes(termo)
+    return convidados.filter((c) => {
+      const bateNome = !termo || c.nome.toLowerCase().includes(termo)
 
-    const bateConvidado =
-      filtroConvidado === 'todos' ||
-      (filtroConvidado === 'sim' && c.convidado) ||
-      (filtroConvidado === 'nao' && !c.convidado)
+      const bateConvidado =
+        filtroConvidado === 'todos' ||
+        (filtroConvidado === 'sim' && c.convidado) ||
+        (filtroConvidado === 'nao' && !c.convidado)
 
-    const bateConfirmado =
-      filtroConfirmado === 'todos' ||
-      (filtroConfirmado === 'sim' && c.confirmado) ||
-      (filtroConfirmado === 'nao' && !c.confirmado)
+      const bateConfirmado =
+        filtroConfirmado === 'todos' ||
+        (filtroConfirmado === 'sim' && c.confirmado) ||
+        (filtroConfirmado === 'nao' && !c.confirmado)
 
-    const bateCheckin =
-      filtroCheckin === 'todos' ||
-      (filtroCheckin === 'sim' && c.checkinsRealizados > 0) ||
-      (filtroCheckin === 'nao' && c.checkinsRealizados === 0)
+      const bateCheckin =
+        filtroCheckin === 'todos' ||
+        (filtroCheckin === 'sim' && c.checkinsRealizados > 0) ||
+        (filtroCheckin === 'nao' && c.checkinsRealizados === 0)
 
-    return bateNome && bateConvidado && bateConfirmado && bateCheckin
-  })
-}, [busca, filtroConvidado, filtroConfirmado, filtroCheckin, convidados])
+      return bateNome && bateConvidado && bateConfirmado && bateCheckin
+    })
+  }, [busca, filtroConvidado, filtroConfirmado, filtroCheckin, convidados])
 
   const totalPaginas = Math.max(1, Math.ceil(convidadosFiltrados.length / ITENS_POR_PAGINA))
 
-const convidadosPaginados = useMemo(() => {
-  const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA
-  return convidadosFiltrados.slice(inicio, inicio + ITENS_POR_PAGINA)
-}, [convidadosFiltrados, paginaAtual])
+  const convidadosPaginados = useMemo(() => {
+    const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA
+    return convidadosFiltrados.slice(inicio, inicio + ITENS_POR_PAGINA)
+  }, [convidadosFiltrados, paginaAtual])
 
-useEffect(() => {
-  setPaginaAtual(1)
-}, [busca, filtroConvidado, filtroConfirmado, filtroCheckin])
+  useEffect(() => {
+    setPaginaAtual(1)
+  }, [busca, filtroConvidado, filtroConfirmado, filtroCheckin])
 
   function sair() {
     startTransition(async () => {
@@ -87,8 +87,6 @@ useEffect(() => {
       router.refresh()
     })
   }
-
-  const [linkCopiadoId, setLinkCopiadoId] = useState<string | null>(null)
 
   function handleGerarConvite(convidadoId: string) {
     const link = `${window.location.origin}/confirmar/${convidadoId}`
@@ -161,12 +159,11 @@ useEffect(() => {
               valor={filtroConfirmado}
               aoMudar={setFiltroConfirmado}
             />
-
             <FiltroSelect
-    label="Check-in"
-    valor={filtroCheckin}
-    aoMudar={setFiltroCheckin}
-  />
+              label="Check-in"
+              valor={filtroCheckin}
+              aoMudar={setFiltroCheckin}
+            />
           </div>
         </div>
 
@@ -175,19 +172,23 @@ useEffect(() => {
             <p className="py-6 text-sm text-[#8B8F9C]">Nenhum convidado encontrado.</p>
           )}
           {convidadosPaginados.map((c) => (
-            <div key={c.id} className="flex items-center justify-between py-4">
-              <div>
-                <p className="text-sm text-[#EDEEF2]">{c.nome}</p>
-                <p className="text-xs text-[#8B8F9C]">{c.email ?? 'sem e-mail'}</p>
+            <div
+              key={c.id}
+              className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm text-[#EDEEF2]">{c.nome}</p>
+                <p className="truncate text-xs text-[#8B8F9C]">{c.email ?? 'sem e-mail'}</p>
                 <p className="mt-1 text-xs text-[#8B8F9C]">
                   {c.convidado ? 'Convite enviado' : 'Convite não enviado'}
                 </p>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
+              <div className="flex items-center justify-between gap-4 sm:justify-end">
+                <div className="text-left sm:text-right">
                   <span
-                    className={`text-xs uppercase tracking-wide ${c.confirmado ? 'text-[#C9A227]' : 'text-[#8B8F9C]'
-                      }`}
+                    className={`text-xs uppercase tracking-wide ${
+                      c.confirmado ? 'text-[#C9A227]' : 'text-[#8B8F9C]'
+                    }`}
                   >
                     {c.confirmado ? 'Confirmado' : 'Pendente'}
                   </span>
@@ -225,38 +226,37 @@ useEffect(() => {
             </div>
           ))}
         </div>
+
         {convidadosFiltrados.length > 0 && (
-  <div className="mt-6 flex items-center justify-between">
-    <button
-      type="button"
-      onClick={() => setPaginaAtual((p) => Math.max(1, p - 1))}
-      disabled={paginaAtual === 1}
-      className="text-xs uppercase tracking-[0.2em] text-[#8B8F9C] underline underline-offset-4 hover:text-[#C9A227] disabled:opacity-30 disabled:no-underline"
-      style={{ fontFamily: 'var(--font-mono)' }}
-    >
-      ← Anterior
-    </button>
+          <div className="mt-6 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setPaginaAtual((p) => Math.max(1, p - 1))}
+              disabled={paginaAtual === 1}
+              className="text-xs uppercase tracking-[0.2em] text-[#8B8F9C] underline underline-offset-4 hover:text-[#C9A227] disabled:opacity-30 disabled:no-underline"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              ← Anterior
+            </button>
 
-    <p className="text-xs text-[#8B8F9C]" style={{ fontFamily: 'var(--font-mono)' }}>
-      Página {paginaAtual} de {totalPaginas}
-    </p>
+            <p className="text-xs text-[#8B8F9C]" style={{ fontFamily: 'var(--font-mono)' }}>
+              Página {paginaAtual} de {totalPaginas}
+            </p>
 
-    <button
-      type="button"
-      onClick={() => setPaginaAtual((p) => Math.min(totalPaginas, p + 1))}
-      disabled={paginaAtual === totalPaginas}
-      className="text-xs uppercase tracking-[0.2em] text-[#8B8F9C] underline underline-offset-4 hover:text-[#C9A227] disabled:opacity-30 disabled:no-underline"
-      style={{ fontFamily: 'var(--font-mono)' }}
-    >
-      Próxima →
-    </button>
-  </div>
-)}
+            <button
+              type="button"
+              onClick={() => setPaginaAtual((p) => Math.min(totalPaginas, p + 1))}
+              disabled={paginaAtual === totalPaginas}
+              className="text-xs uppercase tracking-[0.2em] text-[#8B8F9C] underline underline-offset-4 hover:text-[#C9A227] disabled:opacity-30 disabled:no-underline"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              Próxima →
+            </button>
+          </div>
+        )}
       </div>
-      {modalAberto && (
-        <NovoConvidadoModal onFechar={() => setModalAberto(false)} />
-      )}
 
+      {modalAberto && <NovoConvidadoModal onFechar={() => setModalAberto(false)} />}
     </main>
   )
 }
@@ -276,15 +276,12 @@ function Card({
   return (
     <div className="border border-white/10 p-4">
       <p
-        className="text-[11px] text-[#8B8F9C]"
+        className="text-[11px] tracking-[0.2em] text-[#8B8F9C]"
         style={{ fontFamily: 'var(--font-mono)' }}
       >
         {titulo.toUpperCase()}
       </p>
-      <p
-        className={`mt-3 text-2xl ${corClasse}`}
-        style={{ fontFamily: 'var(--font-display)' }}
-      >
+      <p className={`mt-2 text-2xl ${corClasse}`} style={{ fontFamily: 'var(--font-display)' }}>
         {valor}
       </p>
     </div>
