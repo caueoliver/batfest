@@ -78,6 +78,7 @@ export async function buscarDadosAdmin() {
     totalJaConvidados: convidados.filter((c) => c.convidado).length, 
     totalConfirmados: convidados.filter((c) => c.confirmado).length,
     totalAcompanhantes: convites.filter((c) => c.nome_convidado).length,
+    totalCheckins: convites.filter((c) => c.data_checkin).length,
     }
 }
 
