@@ -3,6 +3,7 @@
 import { useState, useMemo, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { sairAdmin, gerarConvite } from './actions-admin'
+import { NovoConvidadoModal } from './NovoConvidadoModal'
 
 
 type ConvidadoComContagem = {
@@ -30,6 +31,7 @@ export function AdminDashboard({
   totalJaConvidados,
   totalAcompanhantes,
 }: Props) {
+  const [modalAberto, setModalAberto] = useState(false)
   const [busca, setBusca] = useState('')
   const [filtroConvidado, setFiltroConvidado] = useState<'todos' | 'sim' | 'nao'>('todos')
   const [filtroConfirmado, setFiltroConfirmado] = useState<'todos' | 'sim' | 'nao'>('todos')
@@ -87,15 +89,25 @@ export function AdminDashboard({
           >
             Painel administrativo
           </h1>
-          <button
-            type="button"
-            onClick={sair}
-            disabled={isPending}
-            className="text-xs uppercase tracking-[0.2em] text-[#8B8F9C] underline underline-offset-4 hover:text-[#C9A227]"
-            style={{ fontFamily: 'var(--font-mono)' }}
-          >
-            Sair
-          </button>
+          <div className="flex items-center gap-6">
+            <button
+              type="button"
+              onClick={() => setModalAberto(true)}
+              className="text-xs uppercase tracking-[0.2em] text-[#C9A227] underline underline-offset-4 hover:text-[#E8C766]"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              + Novo convidado
+            </button>
+            <button
+              type="button"
+              onClick={sair}
+              disabled={isPending}
+              className="text-xs uppercase tracking-[0.2em] text-[#8B8F9C] underline underline-offset-4 hover:text-[#C9A227]"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              Sair
+            </button>
+          </div>
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-4">
@@ -184,6 +196,10 @@ export function AdminDashboard({
           ))}
         </div>
       </div>
+      {modalAberto && (
+        <NovoConvidadoModal onFechar={() => setModalAberto(false)} />
+      )}
+
     </main>
   )
 }

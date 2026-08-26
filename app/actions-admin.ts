@@ -92,3 +92,21 @@ export async function gerarConvite(convidadoId: string) {
     throw new Error('Não foi possível marcar o convidado.')
   }
 }
+
+export async function criarConvidado(nome: string, limiteAcompanhantes: number) {
+  const { error } = await supabase
+    .from('convidados')
+    .insert({
+      nome,
+      limite_acompanhantes: limiteAcompanhantes,
+      confirmado: false,
+      convidado: false,
+      email: null,
+    })
+
+  if (error) {
+    console.error('Erro do Supabase ao criar convidado:', error)
+    throw new Error('Não foi possível cadastrar o convidado.')
+  }
+}
+
