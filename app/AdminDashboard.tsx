@@ -150,7 +150,6 @@ export function AdminDashboard({
             valorTotal={totalConvidados + capacidadeAjustada}
             detalhes={[
               { label: 'Convidados (titulares)', valor: totalConvidados },
-              { label: 'Acompanhantes confirmados', valor: totalCapacidadeAcompanhantes },
               { label: 'Acompanhantes em aberto', valor: capacidadeAjustada - totalAcompanhantes },
             ]}
           />
