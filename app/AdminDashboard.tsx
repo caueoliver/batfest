@@ -74,6 +74,15 @@ export function AdminDashboard({
     })
   }, [busca, filtroConvidado, filtroConfirmado, filtroCheckin, convidados])
 
+  const capacidadeAjustada = useMemo(() => {
+  return convidados.reduce((soma, c) => {
+    const acompanhantesEsperados = c.confirmado
+      ? c.acompanhantesConfirmados 
+      : c.limite_acompanhantes 
+    return soma + acompanhantesEsperados
+  }, 0)
+  }, [convidados])
+
   const totalPaginas = Math.max(1, Math.ceil(convidadosFiltrados.length / ITENS_POR_PAGINA))
 
   const convidadosPaginados = useMemo(() => {
@@ -138,10 +147,11 @@ export function AdminDashboard({
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <CardDetalhavel
             titulo="Pessoas na lista"
-            valorTotal={totalConvidados + totalCapacidadeAcompanhantes}
+            valorTotal={totalConvidados + capacidadeAjustada}
             detalhes={[
               { label: 'Convidados (titulares)', valor: totalConvidados },
-              { label: 'Vagas para acompanhantes', valor: totalCapacidadeAcompanhantes },
+              { label: 'Acompanhantes confirmados', valor: totalCapacidadeAcompanhantes },
+              { label: 'Acompanhantes em aberto', valor: capacidadeAjustada - totalAcompanhantes },
             ]}
           />
           <Card titulo="Receberam convite" valor={totalJaConvidados}/>
