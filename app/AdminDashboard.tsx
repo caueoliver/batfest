@@ -137,7 +137,7 @@ export function AdminDashboard({
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           <CardDetalhavel
-            titulo="Total convidado"
+            titulo="Pessoas na lista"
             valorTotal={totalConvidados + totalCapacidadeAcompanhantes}
             detalhes={[
               { label: 'Convidados (titulares)', valor: totalConvidados },
