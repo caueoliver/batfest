@@ -144,7 +144,7 @@ export function AdminDashboard({
               { label: 'Vagas para acompanhantes', valor: totalCapacidadeAcompanhantes },
             ]}
           />
-          <Card titulo="Aguardando convite" valor={totalConvidados - totalJaConvidados} />
+          <Card titulo="Receberam convite" valor={totalJaConvidados}/>
           <CardDetalhavel
             titulo="Total confirmado"
             valorTotal={totalConfirmados + totalAcompanhantes}
