@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { sairAdmin, gerarConvite } from './actions-admin'
 import { NovoConvidadoModal } from './NovoConvidadoModal'
+import { ConfirmarExclusaoModal } from './ConfirmarExclusaoModal'
 
 type ConvidadoComContagem = {
   id: string
@@ -23,6 +24,7 @@ type Props = {
   totalConfirmados: number
   totalAcompanhantes: number
   totalCheckins: number
+  totalCapacidadeAcompanhantes: number
 }
 
 const ITENS_POR_PAGINA = 10
@@ -34,6 +36,7 @@ export function AdminDashboard({
   totalJaConvidados,
   totalAcompanhantes,
   totalCheckins,
+  totalCapacidadeAcompanhantes,
 }: Props) {
   const [modalAberto, setModalAberto] = useState(false)
   const [busca, setBusca] = useState('')
@@ -44,6 +47,7 @@ export function AdminDashboard({
   const [isPending, startTransition] = useTransition()
   const [linkCopiadoId, setLinkCopiadoId] = useState<string | null>(null)
   const router = useRouter()
+  const [excluindo, setExcluindo] = useState<{ id: string; nome: string } | null>(null)
 
   const convidadosFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase()
@@ -132,10 +136,24 @@ export function AdminDashboard({
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          <Card titulo="Convidados" valor={totalConvidados} />
+          <CardDetalhavel
+            titulo="Total convidado"
+            valorTotal={totalConvidados + totalCapacidadeAcompanhantes}
+            detalhes={[
+              { label: 'Convidados (titulares)', valor: totalConvidados },
+              { label: 'Vagas para acompanhantes', valor: totalCapacidadeAcompanhantes },
+            ]}
+          />
           <Card titulo="Aguardando convite" valor={totalConvidados - totalJaConvidados} />
-          <Card titulo="Confirmados" valor={totalConfirmados} cor="amarelo" />
-          <Card titulo="Acompanhantes extras" valor={totalAcompanhantes} cor="amarelo" />
+          <CardDetalhavel
+            titulo="Total confirmado"
+            valorTotal={totalConfirmados + totalAcompanhantes}
+            cor="amarelo"
+            detalhes={[
+              { label: 'Titulares confirmados', valor: totalConfirmados },
+              { label: 'Acompanhantes confirmados', valor: totalAcompanhantes },
+            ]}
+          />
           <Card titulo="Check-ins realizados" valor={totalCheckins} cor="verde" />
         </div>
 
@@ -172,10 +190,7 @@ export function AdminDashboard({
             <p className="py-6 text-sm text-[#8B8F9C]">Nenhum convidado encontrado.</p>
           )}
           {convidadosPaginados.map((c) => (
-            <div
-              key={c.id}
-              className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
-            >
+            <div key={c.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="truncate text-sm text-[#EDEEF2]">{c.nome}</p>
                 <p className="truncate text-xs text-[#8B8F9C]">{c.email ?? 'sem e-mail'}</p>
@@ -186,9 +201,8 @@ export function AdminDashboard({
               <div className="flex items-center justify-between gap-4 sm:justify-end">
                 <div className="text-left sm:text-right">
                   <span
-                    className={`text-xs uppercase tracking-wide ${
-                      c.confirmado ? 'text-[#C9A227]' : 'text-[#8B8F9C]'
-                    }`}
+                    className={`text-xs uppercase tracking-wide ${c.confirmado ? 'text-[#C9A227]' : 'text-[#8B8F9C]'
+                      }`}
                   >
                     {c.confirmado ? 'Confirmado' : 'Pendente'}
                   </span>
@@ -210,6 +224,14 @@ export function AdminDashboard({
                         ? 'Copiar link'
                         : 'Gerar convite'}
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setExcluindo({ id: c.id, nome: c.nome })}
+                    aria-label={`Excluir ${c.nome}`}
+                    className="text-[#8B8F9C] hover:text-[#D85A30]"
+                  >
+                    🗑
+                  </button>
                   {c.convidado && (
                     <a
                       href={`/api/convite-imagem/${c.id}`}
@@ -222,8 +244,10 @@ export function AdminDashboard({
                     </a>
                   )}
                 </div>
+
               </div>
             </div>
+
           ))}
         </div>
 
@@ -257,6 +281,14 @@ export function AdminDashboard({
       </div>
 
       {modalAberto && <NovoConvidadoModal onFechar={() => setModalAberto(false)} />}
+
+      {excluindo && (
+        <ConfirmarExclusaoModal
+          convidadoId={excluindo.id}
+          nomeConvidado={excluindo.nome}
+          onFechar={() => setExcluindo(null)}
+        />
+      )}
     </main>
   )
 }
@@ -285,6 +317,82 @@ function Card({
         {valor}
       </p>
     </div>
+  )
+}
+
+function CardDetalhavel({
+  titulo,
+  valorTotal,
+  cor,
+  detalhes,
+}: {
+  titulo: string
+  valorTotal: number
+  cor?: 'amarelo' | 'verde'
+  detalhes: { label: string; valor: number }[]
+}) {
+  const [aberto, setAberto] = useState(false)
+  const corClasse =
+    cor === 'amarelo' ? 'text-yellow-400' : cor === 'verde' ? 'text-green-400' : 'text-[#EDEEF2]'
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setAberto(true)}
+        className="border border-white/10 p-4 text-left transition hover:border-[#C9A227]/40"
+      >
+        <p
+          className="text-[11px] tracking-[0.2em] text-[#8B8F9C]"
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          {titulo.toUpperCase()}
+        </p>
+        <p className={`mt-2 text-2xl ${corClasse}`} style={{ fontFamily: 'var(--font-display)' }}>
+          {valorTotal}
+        </p>
+      </button>
+
+      {aberto && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-6"
+          onClick={() => setAberto(false)}
+        >
+          <div
+            className="w-full max-w-xs border border-white/10 bg-black p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p
+              className="text-[11px] tracking-[0.35em] text-[#8B8F9C]"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              {titulo.toUpperCase()}
+            </p>
+            <p className={`mt-2 text-3xl ${corClasse}`} style={{ fontFamily: 'var(--font-display)' }}>
+              {valorTotal}
+            </p>
+
+            <div className="mt-6 space-y-2 border-t border-white/10 pt-4">
+              {detalhes.map((d) => (
+                <div key={d.label} className="flex items-center justify-between text-sm">
+                  <span className="text-[#8B8F9C]">{d.label}</span>
+                  <span className="text-[#EDEEF2]">{d.valor}</span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setAberto(false)}
+              className="mt-6 w-full text-xs uppercase tracking-[0.2em] text-[#C9A227] underline underline-offset-4 hover:text-[#E8C766]"
+              style={{ fontFamily: 'var(--font-mono)' }}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 

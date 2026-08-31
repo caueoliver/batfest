@@ -90,6 +90,10 @@ export async function buscarDadosAdmin() {
     totalConfirmados: convidados.filter((c) => c.confirmado).length,
     totalAcompanhantes: convites.filter((c) => c.nome_convidado).length,
     totalCheckins: convites.filter((c) => c.data_checkin).length,
+    totalCapacidadeAcompanhantes: convidados.reduce(
+    (soma, c) => soma + c.limite_acompanhantes,
+    0
+  ),
   }
 }
 
@@ -155,6 +159,19 @@ export async function validarConvite(conviteId: string) {
   return {
     status: 'valido' as const,
     nome: nomeExibido,
+  }
+}
+
+
+export async function excluirConvidado(convidadoId: string) {
+  const { error } = await supabase
+    .from('convidados')
+    .delete()
+    .eq('id', convidadoId)
+
+  if (error) {
+    console.error('Erro do Supabase ao excluir convidado:', error)
+    throw new Error('Não foi possível excluir o convidado.')
   }
 }
 
