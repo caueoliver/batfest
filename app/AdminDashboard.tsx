@@ -343,7 +343,7 @@ function CardDetalhavel({
         className="border border-white/10 p-4 text-left transition hover:border-[#C9A227]/40"
       >
         <p
-          className="text-[11px] tracking-[0.2em] text-[#8B8F9C]"
+          className="text-[11px] text-[#8B8F9C]"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
           {titulo.toUpperCase()}
