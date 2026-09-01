@@ -150,7 +150,7 @@ export function AdminDashboard({
             valorTotal={totalConvidados + capacidadeAjustada}
             detalhes={[
               { label: 'Convidados (titulares)', valor: totalConvidados },
-              { label: 'Acompanhantes em aberto', valor: capacidadeAjustada - totalAcompanhantes },
+              { label: 'Acompanhantes', valor: capacidadeAjustada},
             ]}
           />
           <Card titulo="Receberam convite" valor={totalJaConvidados}/>
